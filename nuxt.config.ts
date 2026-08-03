@@ -29,10 +29,21 @@ export default defineNuxtConfig({
   },
 
   runtimeConfig: {
-    // Server-only. Named without the NUXT_ prefix on purpose so that
-    // OPENROUTER_API_KEY / OPENROUTER_MODEL work as-is.
-    openrouterApiKey: process.env.OPENROUTER_API_KEY || '',
-    openrouterModel: process.env.OPENROUTER_MODEL || ''
+    /*
+     * Declared empty on purpose. Do not reference process.env here.
+     *
+     * nuxt.config.ts is evaluated at build time, so `process.env.OPENROUTER_API_KEY`
+     * would be read on the build machine and inlined as a string literal into the
+     * server bundle. That bakes the key into a deployable artifact: Netlify's
+     * secret scanner fails the build for exactly this, and rightly so.
+     *
+     * Keeping the keys declared but empty preserves the typed shape and the
+     * standard NUXT_OPENROUTER_API_KEY runtime override, while baking nothing.
+     * The handler reads process.env at request time, which is where the plain
+     * unprefixed OPENROUTER_API_KEY / OPENROUTER_MODEL names are picked up.
+     */
+    openrouterApiKey: '',
+    openrouterModel: ''
   },
 
   app: {

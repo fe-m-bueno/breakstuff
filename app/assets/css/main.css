@@ -1,0 +1,436 @@
+/*
+ * Archivo carries the display type only. Body copy stays on the platform font,
+ * which already ships optical sizing and legibility tuning, so the download is
+ * one face used for the loudest thing on the page rather than all of it.
+ */
+@import '@fontsource-variable/archivo/wght.css';
+@import 'tailwindcss';
+
+/*
+ * Theme is class-driven rather than media-driven so the toggle can override the
+ * OS preference. @nuxtjs/color-mode puts `.dark` on <html> before paint.
+ */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ---------------------------------------------------------------------------
+ * Palette
+ *
+ * Brown, in the Notion register: the hue lives in the neutrals rather than in
+ * large flat fills. Notion's body text is a warm near-black (#37352f) on white,
+ * which is what keeps a mostly-monochrome page from reading cold. We follow
+ * that and reserve saturated clay for accents only.
+ *
+ * `cocoa` is the warm neutral ramp (surfaces, text, borders).
+ * `clay`  is the single accent (see COLOR CONSISTENCY: nothing else is used).
+ * ------------------------------------------------------------------------- */
+@theme {
+  --color-cocoa-25: #fdfcfb;
+  --color-cocoa-50: #faf9f7;
+  --color-cocoa-100: #f4f1ee;
+  --color-cocoa-200: #e8e3dd;
+  --color-cocoa-300: #d6cec5;
+  --color-cocoa-400: #b0a49a;
+  --color-cocoa-500: #8b7d72;
+  --color-cocoa-600: #6b6057;
+  --color-cocoa-700: #514840;
+  --color-cocoa-800: #37312b;
+  --color-cocoa-850: #2b2621;
+  --color-cocoa-900: #211d19;
+  --color-cocoa-950: #17140f;
+
+  --color-clay-50: #fbf3ee;
+  --color-clay-100: #f5e3d8;
+  --color-clay-200: #e8c5b0;
+  --color-clay-300: #d7a181;
+  --color-clay-400: #c17f5c;
+  --color-clay-500: #a86440;
+  --color-clay-600: #8b5133;
+  --color-clay-700: #6f402a;
+  --color-clay-800: #543124;
+  --color-clay-900: #3c241b;
+
+  --font-sans:
+    ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif,
+    'Apple Color Emoji', 'Segoe UI Emoji';
+
+  /* Display: heavy grotesque, for the wordmark and the one headline. */
+  --font-display: 'Archivo Variable', var(--font-sans);
+
+  /* Estimates read as measurements, so they get a machine face. */
+  --font-mono: ui-monospace, 'SF Mono', 'Cascadia Mono', Menlo, Consolas, monospace;
+
+  /* Notion's radius language: small and uniform. One scale, used everywhere. */
+  --radius-control: 0.375rem;
+  --radius-surface: 0.5rem;
+  --radius-overlay: 0.75rem;
+
+  /*
+   * Custom curves. The stock CSS easings are too weak to read as intentional.
+   * `snap` is a strong ease-out for anything entering or responding to input;
+   * `glide` is a strong ease-in-out for things already on screen moving A to B.
+   */
+  --ease-snap: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-glide: cubic-bezier(0.77, 0, 0.175, 1);
+}
+
+/* ---------------------------------------------------------------------------
+ * Semantic tokens
+ *
+ * Components reference these, never the ramps above, so light and dark stay in
+ * lockstep and there is exactly one place to retune a surface.
+ * `@theme inline` is required for tokens whose value is a runtime var.
+ * ------------------------------------------------------------------------- */
+:root {
+  --ui-canvas: var(--color-cocoa-25);
+  --ui-surface: #ffffff;
+  --ui-surface-raised: #ffffff;
+  --ui-surface-sunken: var(--color-cocoa-100);
+  --ui-hover: var(--color-cocoa-100);
+  /* Decorative: dividers and the indent guide, which carry no information. */
+  --ui-border: var(--color-cocoa-200);
+  /*
+   * Control boundaries (checkbox outline, input border). WCAG 1.4.11 wants 3:1
+   * against the adjacent surface, and cocoa-300 measured 1.52 on white, so a
+   * checkbox was effectively invisible until it was checked. Measured 3.50.
+   */
+  --ui-border-strong: var(--color-cocoa-500);
+  --ui-text: var(--color-cocoa-800);
+  --ui-text-muted: var(--color-cocoa-600);
+  /*
+   * Subtle text is still text: cocoa-500 measured 3.89 on the canvas, which
+   * fails AA at the 12-13px sizes it is used at (hints, footer, placeholders,
+   * completed rows). Measured 4.84. The light and dark ramps diverge here
+   * because one value cannot clear 4.5 against both a white and a near-black
+   * background.
+   */
+  --ui-text-subtle: #7a6d62;
+  --ui-accent: var(--color-clay-600);
+  --ui-accent-hover: var(--color-clay-700);
+  --ui-accent-soft: var(--color-clay-50);
+  --ui-accent-text: #ffffff;
+  --ui-danger: #a83c2e;
+  --ui-danger-soft: #fdf1ef;
+  --ui-shadow-color: 33 29 25;
+}
+
+.dark {
+  --ui-canvas: var(--color-cocoa-950);
+  --ui-surface: var(--color-cocoa-900);
+  --ui-surface-raised: var(--color-cocoa-850);
+  /*
+   * In dark mode "sunken" has to go up, not down: the canvas is already the
+   * darkest value available, so a lower one is indistinguishable from it and the
+   * tab track and count pills vanish. Recessed reads as tinted, not as darker.
+   */
+  --ui-surface-sunken: #2d2721;
+  --ui-hover: var(--color-cocoa-800);
+  --ui-border: #362f28;
+  /* Measured 3.22 against --ui-surface, the backdrop it actually sits on.
+     The earlier #5d5348 was 2.86 and failed 1.4.11. */
+  --ui-border-strong: #776b5c;
+  --ui-text: var(--color-cocoa-100);
+  --ui-text-muted: var(--color-cocoa-400);
+  /* Measured 5.66 on the canvas. See the light-mode note above. */
+  --ui-text-subtle: #9a8d81;
+  /* Lifted two steps: clay-600 on a near-black canvas fails AA. */
+  --ui-accent: var(--color-clay-300);
+  --ui-accent-hover: var(--color-clay-200);
+  --ui-accent-soft: #2e2118;
+  --ui-accent-text: var(--color-cocoa-950);
+  --ui-danger: #e08376;
+  --ui-danger-soft: #2e1c18;
+  --ui-shadow-color: 0 0 0;
+}
+
+@theme inline {
+  --color-canvas: var(--ui-canvas);
+  --color-surface: var(--ui-surface);
+  --color-surface-raised: var(--ui-surface-raised);
+  --color-surface-sunken: var(--ui-surface-sunken);
+  --color-hover: var(--ui-hover);
+  --color-line: var(--ui-border);
+  --color-line-strong: var(--ui-border-strong);
+  --color-ink: var(--ui-text);
+  --color-ink-muted: var(--ui-text-muted);
+  --color-ink-subtle: var(--ui-text-subtle);
+  --color-accent: var(--ui-accent);
+  --color-accent-hover: var(--ui-accent-hover);
+  --color-accent-soft: var(--ui-accent-soft);
+  --color-accent-ink: var(--ui-accent-text);
+  --color-danger: var(--ui-danger);
+  --color-danger-soft: var(--ui-danger-soft);
+}
+
+@layer base {
+  html {
+    /* Type scales with the user's browser font-size setting; spacing is in rem
+       so a larger setting grows the layout with it instead of breaking it. */
+    font-family: var(--font-sans);
+    -webkit-text-size-adjust: 100%;
+    scrollbar-gutter: stable;
+  }
+
+  body {
+    background-color: var(--ui-canvas);
+    color: var(--ui-text);
+    font-size: 0.9375rem;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  /*
+   * Visible focus only for keyboard users, and never removed. Ring sits on the
+   * accent so it reads as part of the design rather than a browser default.
+   */
+  :focus-visible {
+    outline: 2px solid var(--ui-accent);
+    outline-offset: 2px;
+    border-radius: var(--radius-control);
+  }
+
+  ::selection {
+    background-color: var(--ui-accent-soft);
+    color: var(--ui-text);
+  }
+
+  /* Tabular figures so estimate totals do not jitter as they tick. */
+  .tnum {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+@layer components {
+  /*
+   * Display type. Tracking is size-specific rather than one fixed value: letters
+   * read too far apart as they grow, so the largest step pulls in hardest and the
+   * smallest stays near zero. leading is tightened to match.
+   */
+  .display-xl {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: clamp(2.5rem, 9vw, 4.25rem);
+    line-height: 0.93;
+    letter-spacing: -0.045em;
+  }
+
+  .display-mark {
+    font-family: var(--font-display);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+  }
+
+  .meta-num {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.02em;
+  }
+}
+
+@layer components {
+  /*
+   * Screen-reader-only, plus a variant that becomes visible on focus for the
+   * skip link.
+   */
+  .sr-only-focusable:not(:focus):not(:active) {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+ * Motion
+ *
+ * This is an app people keep open all day, so motion is deliberately quiet:
+ * short ease-out transitions for state changes, nothing ambient, nothing on a
+ * loop. Every keyframe below is gated on prefers-reduced-motion.
+ * ------------------------------------------------------------------------- */
+@keyframes overlay-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes surface-in {
+  from {
+    /* Never from scale(0): nothing in the real world appears from nothing. */
+    opacity: 0;
+    transform: scale(0.97) translateY(2px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes surface-out {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+}
+
+/*
+ * Steps landing after a breakdown. This is the one moment the app should feel
+ * like something came apart: each step arrives offset to the left and snaps into
+ * the column, staggered, so you watch the task split rather than find it already
+ * split. It fires once per breakdown, which is rare enough to earn the motion.
+ */
+@keyframes step-in {
+  from {
+    opacity: 0;
+    transform: translateX(-0.75rem) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+/*
+ * First-load entrance for the page's three blocks. Small travel and a short
+ * duration: the point is that the page settles, not that it performs.
+ */
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(0.625rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/*
+ * Collapsing a task's steps. Height has to be animated here rather than transform,
+ * which is the usual rule, because the rows below genuinely have to move up and
+ * close the gap. Reka measures the content and publishes the height as a variable,
+ * so there is no JS measuring in our code.
+ *
+ * ease-glide (in-out) rather than ease-out: this is content already on screen
+ * moving from A to B, not something entering.
+ */
+@keyframes collapse-open {
+  from {
+    height: 0;
+    opacity: 0;
+  }
+  to {
+    height: var(--reka-collapsible-content-height);
+    opacity: 1;
+  }
+}
+
+@keyframes collapse-close {
+  from {
+    height: var(--reka-collapsible-content-height);
+    opacity: 1;
+  }
+  to {
+    height: 0;
+    opacity: 0;
+  }
+}
+
+@keyframes shimmer {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(100%);
+  }
+}
+
+/*
+ * Registered as theme animations rather than written as plain classes.
+ *
+ * A hand-written `.animate-x` cannot be used with a Tailwind variant: writing
+ * `data-[state=open]:animate-collapse-open` generates nothing, because Tailwind
+ * only composes variants onto utilities it knows about. Declaring them here makes
+ * `animate-*` real utilities, so both the bare and the state-scoped forms work.
+ * The collapse animation was silently doing nothing before this.
+ */
+@theme {
+  --animate-overlay-in: overlay-in 160ms var(--ease-snap);
+
+  /* transform-origin is set per-instance from Reka's
+     --reka-*-content-transform-origin so popovers scale out of their trigger,
+     not their own centre. */
+  --animate-surface-in: surface-in 180ms var(--ease-snap);
+
+  /* Exit is faster than enter: the user has already decided. */
+  --animate-surface-out: surface-out 120ms var(--ease-snap);
+
+  --animate-shimmer: shimmer 1.4s linear infinite;
+
+  /* `backwards` so the element stays hidden through its stagger delay. Without it
+     each item flashes at full opacity before its animation starts. */
+  --animate-step-in: step-in 260ms var(--ease-snap) backwards;
+  --animate-rise: rise 420ms var(--ease-snap) backwards;
+
+  /* Closing is quicker than opening: collapsing is a dismissal. */
+  --animate-collapse-open: collapse-open 240ms var(--ease-glide);
+  --animate-collapse-close: collapse-close 180ms var(--ease-glide);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /*
+   * Reduced motion means gentler, not none: opacity and colour still carry
+   * meaning, so only movement is removed.
+   */
+  *,
+  *::before,
+  *::after {
+    transition-duration: 1ms !important;
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+  }
+
+  /*
+   * Substring matchers, not exact class selectors.
+   *
+   * A variant emits its own class name, so `data-[state=open]:animate-surface-in`
+   * produces `.data-\[state\=open\]\:animate-surface-in`, which `.animate-surface-in`
+   * does not match. Matching on the substring covers the bare and variant forms
+   * with one rule.
+   */
+  [class*='animate-overlay-in'],
+  [class*='animate-surface-in'],
+  [class*='animate-surface-out'],
+  [class*='animate-step-in'],
+  [class*='animate-rise'] {
+    /* Everything collapses to a plain fade: sequence and presence still carry
+       their meaning, but nothing travels across the screen. */
+    animation: overlay-in 140ms ease !important;
+  }
+
+  /* Collapse keeps a real height animation, just shortened. Cutting it to nothing
+     would make every row below the disclosure teleport, which is more
+     disorienting than the motion it replaces. */
+  [class*='animate-collapse-open'] {
+    animation: collapse-open 120ms ease !important;
+  }
+
+  [class*='animate-collapse-close'] {
+    animation: collapse-close 100ms ease !important;
+  }
+
+  [class*='animate-shimmer'] {
+    animation: none !important;
+  }
+}

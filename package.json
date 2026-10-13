@@ -33,6 +33,9 @@
     "vue-sonner": "^2.0.9",
     "zod": "^4.4.3"
   },
+  "overrides": {
+    "@nuxt/devtools": "4.0.0-beta.5"
+  },
   "devDependencies": {
     "@tailwindcss/vite": "^4.3.3",
     "@types/node": "^26.1.2",
